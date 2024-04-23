@@ -1,0 +1,11 @@
+{
+  "name": "catfacts",
+  "version": "1.0.0",
+  "description": "A bot to display cat facts in your twitch server.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "John Paul Wile (bots)",
+  "license": "ISC"
+}
