@@ -210,7 +210,7 @@ client.on("message", (channel, tags, message, isSelf) => {
         },
       })
         .then((response) => response.json())
-        .then((data) => client.say(channel, `${data.joke}`));
+        .then((data) => client.say(channel, `${data[0].joke}`));
     }
   } catch (error) {
     console.error(error);
