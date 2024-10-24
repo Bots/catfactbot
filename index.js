@@ -3,7 +3,12 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-const { WATCHED_CHANNEL, BOT_USERNAME, BOT_USER_ACCESS_TOKEN } = process.env;
+const {
+  WATCHED_CHANNEL,
+  BOT_USERNAME,
+  BOT_USER_ACCESS_TOKEN,
+  API_NINJAS_API_KEY,
+} = process.env;
 
 if (!WATCHED_CHANNEL) throw new Error("WATCHED_CHANNEL required");
 if (!BOT_USERNAME) throw new Error("BOT_USERNAME required");
