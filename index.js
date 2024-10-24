@@ -8,6 +8,7 @@ const { WATCHED_CHANNEL, BOT_USERNAME, BOT_USER_ACCESS_TOKEN } = process.env;
 if (!WATCHED_CHANNEL) throw new Error("WATCHED_CHANNEL required");
 if (!BOT_USERNAME) throw new Error("BOT_USERNAME required");
 if (!BOT_USER_ACCESS_TOKEN) throw new Error("BOT_USER_ACCESS_TOKEN required");
+if (!API_NINJAS_API_KEY) throw new Error("API_NINJAS_API_KEY required");
 
 const client = new tmi.client({
   channels: [WATCHED_CHANNEL],
@@ -195,6 +196,16 @@ client.on("message", (channel, tags, message, isSelf) => {
           substances[randomSubstanceIndex].plural ? "are" : "is"
         } stored in the ${bodypart[randomBodypartIndex]}.`
       );
+    }
+
+    if (!isSelf && message === "!joke") {
+      fetch("https://api.api-ninjas.com/v1/jokes", {
+        headers: {
+          "X-Api-Key": API_NINJAS_API_KEY,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => client.say(channel, `${data.joke}`));
     }
   } catch (error) {
     console.error(error);
