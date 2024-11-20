@@ -68,11 +68,11 @@ client.on("message", async (channel, tags, message, isSelf) => {
         messages: [
           {
             role: "system",
-            content: "You are a creative poet that writes short poems.",
+            content: "You are a creative poet that writes short limericks.",
           },
           {
             role: "user",
-            content: `Write a short poem about ${prompt}.`,
+            content: `Write a limerick about ${prompt}.`,
           },
         ],
         max_tokens: 100,
