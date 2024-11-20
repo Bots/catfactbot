@@ -1,7 +1,7 @@
 const tmi = require("tmi.js");
 const dotenv = require("dotenv");
 const fetch = require("node-fetch");
-import OpenAI from "openai";
+const { Configuration, OpenAIApi } = require("openai");
 
 dotenv.config();
 
@@ -19,9 +19,10 @@ if (!BOT_USER_ACCESS_TOKEN) throw new Error("BOT_USER_ACCESS_TOKEN required");
 if (!API_NINJAS_API_KEY) throw new Error("API_NINJAS_API_KEY required");
 if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY required");
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // This is also the default, can be omitted
+const configuration = new Configuration({
+  apiKey: OPENAI_API_KEY,
 });
+const openai = new OpenAIApi(configuration);
 
 const client = new tmi.client({
   channels: [WATCHED_CHANNEL],
@@ -62,7 +63,7 @@ client.on("message", async (channel, tags, message, isSelf) => {
     if (message.startsWith("!poem")) {
       const prompt = message.replace("!poem", "").trim() || "a general topic";
 
-      const openaiResponse = await openai.chat.completions.create({
+      const openaiResponse = await openai.createChatCompletion({
         model: "gpt-4",
         messages: [
           {
