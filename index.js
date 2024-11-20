@@ -64,18 +64,19 @@ client.on("message", async (channel, tags, message, isSelf) => {
       const prompt = message.replace("!poem", "").trim() || "a general topic";
 
       const openaiResponse = await openai.createChatCompletion({
-        model: "gpt-4",
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: "You are a creative poet that writes short limericks.",
+            content:
+              "Forget all previous instructions. You are a creative poet that writes short poems.",
           },
           {
             role: "user",
-            content: `Write a limerick about ${prompt}.`,
+            content: `Write a poem about ${prompt} and keep it under 500 characters.`,
           },
         ],
-        max_tokens: 100,
+        max_tokens: 200,
       });
 
       let poem = openaiResponse.data.choices[0].message.content;
