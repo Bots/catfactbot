@@ -5,66 +5,245 @@ const { Configuration, OpenAIApi } = require("openai");
 
 dotenv.config();
 
-const {
-  WATCHED_CHANNEL,
-  BOT_USERNAME,
-  BOT_USER_ACCESS_TOKEN,
-  API_NINJAS_API_KEY,
-  OPENAI_API_KEY,
-} = process.env;
+const requiredEnvVars = [
+  "WATCHED_CHANNEL",
+  "BOT_USERNAME",
+  "BOT_USER_ACCESS_TOKEN",
+  "API_NINJAS_API_KEY",
+  "OPENAI_API_KEY",
+];
 
-if (!WATCHED_CHANNEL) throw new Error("WATCHED_CHANNEL required");
-if (!BOT_USERNAME) throw new Error("BOT_USERNAME required");
-if (!BOT_USER_ACCESS_TOKEN) throw new Error("BOT_USER_ACCESS_TOKEN required");
-if (!API_NINJAS_API_KEY) throw new Error("API_NINJAS_API_KEY required");
-if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY required");
+requiredEnvVars.forEach((varName) => {
+  if (!process.env[varName]) {
+    console.error(`Environment variable ${varName} is required but not set.`);
+    process.exit(1);
+  }
+});
 
 const configuration = new Configuration({
-  apiKey: OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
 
+const substances = [
+  { substance: "Beer", plural: false },
+  { substance: "Pee", plural: false },
+  { substance: "Bubblegum", plural: false },
+  { substance: "Poop", plural: false },
+  { substance: "Shit", plural: false },
+  { substance: "Peepee", plural: false },
+  { substance: "Weed", plural: false },
+  { substance: "Blood", plural: false },
+  { substance: "Liquor", plural: false },
+  { substance: "Dirt", plural: false },
+  { substance: "Redbulls", plural: true },
+  { substance: "Giggle gas", plural: false },
+  { substance: "Laughter lotion", plural: false },
+  { substance: "Chuckle chocolate", plural: false },
+  { substance: "Snicker syrup", plural: false },
+  { substance: "Jolly jelly", plural: false },
+  { substance: "Mirth mist", plural: false },
+  { substance: "Giggle glue", plural: false },
+  { substance: "Smirk sprinkles", plural: true },
+  { substance: "Titty tonic", plural: false },
+  { substance: "Joy juice", plural: false },
+  { substance: "Belly bubbles", plural: true },
+  { substance: "Cackle cream", plural: false },
+  { substance: "Whipped cream", plural: false },
+  { substance: "Skittles", plural: true },
+  { substance: "Farts", plural: true },
+  { substance: "Sneezes", plural: true },
+  { substance: "Coughs", plural: true },
+  { substance: "Maple syrup", plural: false },
+  { substance: "Hummus", plural: false },
+  { substance: "Texas tea", plural: false },
+  { substance: "Urine", plural: false },
+  { substance: "Feces", plural: false },
+  { substance: "Farts", plural: true },
+  { substance: "Bungjuice", plural: false },
+  { substance: "Milk", plural: false },
+  { substance: "Boogers", plural: true },
+  { substance: "Drool", plural: false },
+  { substance: "Slobber", plural: false },
+  { substance: "Foot fungus", plural: false },
+];
+
+const bodypart = [
+  "peepee",
+  "peen",
+  "weiner",
+  "weenie",
+  "peenie",
+  "winkey",
+  "giney",
+  "jay-jay",
+  "penis",
+  "balls",
+  "ballsack",
+  "nuts",
+  "nutsack",
+  "butthole",
+  "vagina",
+  "booba",
+  "boobs",
+  "tiddies",
+  "tits",
+  "sloppers",
+  "gonads",
+  "butthole",
+  "dong",
+  "hog",
+  "earlobe",
+  "ding-a-ling",
+  "chungus",
+  "gunt",
+  "fupa",
+  "mouth",
+  "nostril",
+  "noodle",
+  "knob",
+  "twig",
+  "berries",
+  "funbags",
+  "bum",
+  "bumhole",
+  "wang",
+  "hoo-ha",
+  "ta-tas",
+  "hooters",
+  "jugs",
+  "cheeks",
+  "schneeps",
+  "glumps",
+  "groopus",
+  "gloopus",
+  "schvance",
+  "grumbus",
+  "snapper",
+  "chonch",
+  "glumbus",
+  "snooper",
+  "head",
+  "glambus",
+  "gleeb",
+  "bleeb",
+  "muffin",
+  "elbow",
+  "knee",
+  "ankle",
+  "shoulder",
+  "wrist",
+  "forehead",
+  "chin",
+  "toes",
+  "belly button",
+  "thighs",
+  "back",
+  "neck",
+  "hip",
+  "palm",
+  "finger",
+  "starfruit",
+  "noobular",
+  "funny bone",
+  "silly willy",
+  "silly goose",
+  "funny bone",
+  "wiggly worm",
+  "jigglypuff",
+  "snickerdoodle",
+  "wobble wobble",
+  "sneeze factory",
+  "giggle gland",
+  "chuckle muscle",
+  "snort button",
+  "tootie patootie",
+  "booger buster",
+  "fluffy muffin",
+  "squishy squash",
+  "wobble wobbler",
+  "giggly bits",
+  "silly willy",
+  "jelly belly",
+  "bouncy castle",
+  "fuzzy wuzzy",
+  "squirmy worm",
+  "doodle dandy",
+  "wacky whacker",
+  "silly sausage",
+  "giggly goo",
+  "snicker snout",
+  "chuckle cheeks",
+  "wobble wobbles",
+  "silly string bean",
+  "jumpy jiggler",
+];
+
 const client = new tmi.client({
-  channels: [WATCHED_CHANNEL],
+  channels: [process.env.WATCHED_CHANNEL],
   identity: {
-    username: BOT_USERNAME,
-    password: `oauth:${BOT_USER_ACCESS_TOKEN}`,
+    username: process.env.BOT_USERNAME,
+    password: `oauth:${process.env.BOT_USER_ACCESS_TOKEN}`,
   },
 });
 
 client.connect();
+console.log("Server started...");
 
 client.on("message", async (channel, tags, message, isSelf) => {
-  console.log("Server started...");
-
-  if (isSelf) return;
+  // if (isSelf) return;
 
   try {
     if (message === "!cat") {
-      fetch("https://catfact.ninja/fact")
-        .then((response) => response.json())
-        .then((data) => client.say(channel, `${data.fact}`));
+      try {
+        const response = await fetch("https://catfact.ninja/fact");
+        const data = await response.json();
+        client.say(channel, `${data.fact}`);
+      } catch (error) {
+        console.error("Error fetching cat fact:", error);
+        client.say(channel, "Sorry, I couldn't fetch a cat fact right now.");
+      }
     }
 
     if (message === "!stored") {
-      // Existing code for !stored command...
+      try {
+        const randomSubstanceIndex = Math.floor(
+          Math.random() * substances.length
+        );
+        const randomBodypartIndex = Math.floor(Math.random() * bodypart.length);
+
+        client.say(
+          channel,
+          `${substances[randomSubstanceIndex].substance} ${
+            substances[randomSubstanceIndex].plural ? "are" : "is"
+          } stored in the ${bodypart[randomBodypartIndex]}.`
+        );
+      } catch (error) {
+        console.error("Error fetching cat fact:", error);
+        client.say(channel, "Sorry, I couldn't fetch a cat fact right now.");
+      }
     }
 
     if (message === "!joke") {
-      fetch("https://api.api-ninjas.com/v1/jokes", {
-        headers: {
-          "X-Api-Key": API_NINJAS_API_KEY,
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => client.say(channel, `${data[0].joke}`));
+      try {
+        const response = await fetch("https://api.api-ninjas.com/v1/jokes", {
+          headers: {
+            "X-Api-Key": process.env.API_NINJAS_API_KEY,
+          },
+        });
+        const data = await response.json();
+        client.say(channel, `${data[0].joke}`);
+      } catch (error) {
+        console.error("Error fetching joke:", error);
+        client.say(channel, "Sorry, I couldn't fetch a joke right now.");
+      }
     }
 
     if (message.startsWith("!poem")) {
       const prompt = message.replace("!poem", "").trim() || "a general topic";
 
       const openaiResponse = await openai.createChatCompletion({
-        model: "gpt-4o",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
@@ -90,6 +269,7 @@ client.on("message", async (channel, tags, message, isSelf) => {
       client.say(channel, poem);
     }
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching poem:", error);
+    client.say(channel, "Sorry, I couldn't fetch a poem right now.");
   }
 });
