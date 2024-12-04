@@ -126,6 +126,7 @@ const bodypart = [
   "head",
   "glambus",
   "gleeb",
+  "creamberry",
   "bleeb",
   "muffin",
   "elbow",
@@ -239,6 +240,42 @@ client.on("message", async (channel, tags, message, isSelf) => {
       }
     }
 
+    if (message.startsWith("!gpt")) {
+      const promptMatch = message.match(/!gpt\s+"(.+?)"/);
+
+      if (promptMatch && promptMatch[1]) {
+        const prompt = promptMatch[1];
+
+        const openaiResponse = await openai.createChatCompletion({
+          model: "gpt-4",
+          messages: [
+            {
+              role: "system",
+              content:
+                "Forget all previous instructions. You are a helpful assistant that answers questions to the best of your ability. You answer them concisely and in less than 300 characters. Preferably less if possible.",
+            },
+            {
+              role: "user",
+              content: `${prompt}`,
+            },
+          ],
+          max_tokens: 200,
+        });
+
+        let answer = openaiResponse.data.choices[0].message.content;
+
+        // Ensure the answer does not exceed Twitch's message length limit
+        const maxLength = 500;
+        if (answer.length > maxLength) {
+          answer = answer.substring(0, maxLength - 3) + "...";
+        }
+
+        client.say(channel, answer);
+      } else {
+        client.say(channel, "Please provide a prompt in quotes after !gpt.");
+      }
+    }
+
     if (message.startsWith("!poem")) {
       const prompt = message.replace("!poem", "").trim() || "a general topic";
 
@@ -248,11 +285,11 @@ client.on("message", async (channel, tags, message, isSelf) => {
           {
             role: "system",
             content:
-              "Forget all previous instructions. You are a creative poet that writes short poems.",
+              "Forget all previous instructions. You are a creative poet that writes short poems and limericks.",
           },
           {
             role: "user",
-            content: `Write a poem about ${prompt} and keep it under 500 characters.`,
+            content: `Write a poem or a limerick about ${prompt} and keep it under 300 characters.`,
           },
         ],
         max_tokens: 200,
