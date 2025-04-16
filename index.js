@@ -1,7 +1,7 @@
 const tmi = require("tmi.js");
 const dotenv = require("dotenv");
 const fetch = require("node-fetch");
-const { Configuration, OpenAIApi } = require("openai");
+const OpenAI = require("openai");
 
 dotenv.config();
 
@@ -20,10 +20,9 @@ requiredEnvVars.forEach((varName) => {
   }
 });
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
 
 const substances = [
   { substance: "Beer", plural: false },
@@ -220,8 +219,8 @@ client.on("message", async (channel, tags, message, isSelf) => {
           } stored in the ${bodypart[randomBodypartIndex]}.`
         );
       } catch (error) {
-        console.error("Error fetching cat fact:", error);
-        client.say(channel, "Sorry, I couldn't fetch a cat fact right now.");
+        console.error("Error fetching stored fact:", error);
+        client.say(channel, "Sorry, I couldn't fetch a stored fact right now.");
       }
     }
 
@@ -241,69 +240,94 @@ client.on("message", async (channel, tags, message, isSelf) => {
     }
 
     if (message.startsWith("!gpt")) {
-      const promptMatch = message.match(/!gpt\s+"(.+?)"/);
+      try {
+        const promptMatch = message.match(/!gpt\s+"(.+?)"/);
 
-      if (promptMatch && promptMatch[1]) {
-        const prompt = promptMatch[1];
+        if (promptMatch && promptMatch[1]) {
+          const prompt = promptMatch[1];
 
-        const openaiResponse = await openai.createChatCompletion({
-          model: "gpt-4",
-          messages: [
-            {
-              role: "system",
-              content:
-                "Forget all previous instructions. You are a helpful assistant that answers questions to the best of your ability. You answer them concisely and in less than 300 characters. Preferably less if possible.",
-            },
-            {
-              role: "user",
-              content: `${prompt}`,
-            },
-          ],
-          max_tokens: 200,
-        });
+          const openaiResponse = await openai.chat.completions.create({
+            model: "gpt-4",
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are a helpful assistant that answers questions to the best of your ability. You answer them concisely and in less than 300 characters. Preferably less if possible.",
+              },
+              {
+                role: "user",
+                content: `${prompt}`,
+              },
+            ],
+            max_tokens: 200,
+          });
 
-        let answer = openaiResponse.data.choices[0].message.content;
+          let answer = openaiResponse.choices[0].message.content;
 
-        // Ensure the answer does not exceed Twitch's message length limit
-        const maxLength = 500;
-        if (answer.length > maxLength) {
-          answer = answer.substring(0, maxLength - 3) + "...";
+          // Ensure the answer does not exceed Twitch's message length limit
+          const maxLength = 500;
+          if (answer.length > maxLength) {
+            answer = answer.substring(0, maxLength - 3) + "...";
+          }
+
+          client.say(channel, answer);
+        } else {
+          client.say(channel, "Please provide a prompt in quotes after !gpt.");
         }
-
-        client.say(channel, answer);
-      } else {
-        client.say(channel, "Please provide a prompt in quotes after !gpt.");
+      } catch (error) {
+        console.error("Error with GPT command:", error);
+        client.say(
+          channel,
+          "Sorry, I couldn't process the GPT request right now."
+        );
       }
     }
 
-    if (message.startsWith("!poem")) {
-      const prompt = message.replace("!poem", "").trim() || "a general topic";
+    if (message.startsWith("!horoscope")) {
+      try {
+        const args = message.split(" ");
+        const zodiacSign = args[1]?.toLowerCase();
 
-      const openaiResponse = await openai.createChatCompletion({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content:
-              "Forget all previous instructions. You are a creative poet that writes short poems and limericks.",
-          },
-          {
-            role: "user",
-            content: `Write a poem or a limerick about ${prompt} and keep it under 300 characters.`,
-          },
-        ],
-        max_tokens: 200,
-      });
+        if (zodiacSign) {
+          // Call OpenAI API to generate a horoscope
+          const openaiResponse = await openai.chat.completions.create({
+            model: "gpt-4",
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are an amusing fake astrologer. Create a short, entertaining fake horoscope that's slightly absurd but fun. Keep it under 300 characters.",
+              },
+              {
+                role: "user",
+                content: `Generate a fake horoscope for ${zodiacSign}. Be creative and funny.`,
+              },
+            ],
+            max_tokens: 200,
+          });
 
-      let poem = openaiResponse.data.choices[0].message.content;
+          let horoscope = openaiResponse.choices[0].message.content;
 
-      // Ensure the poem does not exceed Twitch's message length limit
-      const maxLength = 500;
-      if (poem.length > maxLength) {
-        poem = poem.substring(0, maxLength - 3) + "...";
+          // Ensure the horoscope doesn't exceed Twitch's message length limit
+          const maxLength = 500;
+          if (horoscope.length > maxLength) {
+            horoscope = horoscope.substring(0, maxLength - 3) + "...";
+          }
+
+          client.say(channel, `${zodiacSign.toUpperCase()} ★ ${horoscope}`);
+        } else {
+          client.say(
+            channel,
+            "Please provide a zodiac sign. Example: !horoscope aquarius"
+          );
+        }
+      } catch (error) {
+        console.error("Error with horoscope command:", error);
+        client.say(
+          channel,
+          "Sorry, I couldn't generate a horoscope right now."
+        );
       }
-
-      client.say(channel, poem);
     }
   } catch (error) {
     console.error("Error fetching poem:", error);
